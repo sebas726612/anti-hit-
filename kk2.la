@@ -1,0 +1,154 @@
+--= SEBAS HUB =--
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+
+-- Crear GUI
+local ScreenGui = Instance.new("ScreenGui", player.PlayerGui)
+ScreenGui.Name = "SebasHub"
+
+-- Botón para abrir/cerrar
+local OpenBtn = Instance.new("ImageButton", ScreenGui)
+OpenBtn.Size = UDim2.new(0,120,0,45)
+OpenBtn.Position = UDim2.new(0.05,0,0.2,0)
+OpenBtn.Image = "rbxassetid://8045196294" -- Fondo de rayos
+OpenBtn.ImageColor3 = Color3.fromRGB(255,255,255)
+OpenBtn.ScaleType = Enum.ScaleType.Crop
+
+local BtnText = Instance.new("TextLabel", OpenBtn)
+BtnText.Size = UDim2.new(1,0,1,0)
+BtnText.Text = "SEBAS HUB"
+BtnText.BackgroundTransparency = 1
+BtnText.TextColor3 = Color3.fromRGB(255,255,0)
+BtnText.TextScaled = true
+BtnText.Font = Enum.Font.FredokaOne
+
+-- Hacer movible el BOTÓN
+local UIS = game:GetService("UserInputService")
+local draggingBtn = false
+local dragStartBtn
+local startPosBtn
+
+local function updateBtn(input)
+    local delta = input.Position - dragStartBtn
+    OpenBtn.Position = UDim2.new(startPosBtn.X.Scale, startPosBtn.X.Offset + delta.X, startPosBtn.Y.Scale, startPosBtn.Y.Offset + delta.Y)
+end
+
+OpenBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        draggingBtn = true
+        dragStartBtn = input.Position
+        startPosBtn = OpenBtn.Position
+    end
+end)
+
+OpenBtn.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        draggingBtn = false
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if draggingBtn and input.UserInputType == Enum.UserInputType.MouseMovement then
+        updateBtn(input)
+    end
+end)
+
+-- Ventana principal
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0,260,0,180)
+Frame.Position = UDim2.new(0.1,0,0.2,0)
+Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+Frame.Visible = false
+Instance.new("UICorner", Frame)
+
+-- Título
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1,0,0,40)
+Title.Text = "SEBAS HUB"
+Title.TextColor3 = Color3.fromRGB(255,255,0)
+Title.Font = Enum.Font.FredokaOne
+Title.TextScaled = true
+Title.BackgroundTransparency = 1
+
+-- Hacer movible la ventana
+local dragging = false
+local dragStart
+local startPos
+
+Frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = Frame.Position
+    end
+end)
+
+Frame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- Abrir/Cerrar ventana
+OpenBtn.MouseButton1Click:Connect(function()
+    Frame.Visible = not Frame.Visible
+end)
+
+-- Botón para spawnear clon falso
+local CloneBtn = Instance.new("TextButton", Frame)
+CloneBtn.Size = UDim2.new(0,200,0,50)
+CloneBtn.Position = UDim2.new(0.5,-100,0.5,-25)
+CloneBtn.Text = "CREAR CLON LAG"
+CloneBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+CloneBtn.TextColor3 = Color3.fromRGB(255,255,255)
+CloneBtn.Font = Enum.Font.FredokaOne
+CloneBtn.TextScaled = true
+Instance.new("UICorner", CloneBtn)
+
+-- Función del clon
+local function createFakeClone()
+    local char = player.Character
+    if not char then return end
+
+    local clone = char:Clone()
+    clone.Parent = workspace
+    clone.Name = player.Name .. "_FakeLag"
+    
+    -- Colocarlo donde estabas cuando usaste el brainrot
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if root then
+        clone:MoveTo(root.Position)
+    end
+
+    -- Quitar scripts del clon para que quede inmóvil
+    for _,v in pairs(clone:GetDescendants()) do
+        if v:IsA("Script") or v:IsA("LocalScript") then
+            v:Destroy()
+        end
+    end
+
+    -- Congelar animación
+    if clone:FindFirstChild("Humanoid") then
+        clone.Humanoid.WalkSpeed = 0
+        clone.Humanoid.JumpPower = 0
+    end
+
+    -- Hacerlo parecer laggeado
+    game:GetService("TweenService"):Create(
+        clone.HumanoidRootPart,
+        TweenInfo.new(0.3, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true),
+        {CFrame = clone.HumanoidRootPart.CFrame * CFrame.new(0,0.3,0)}
+    ):Play()
+end
+
+-- Activar clon al pulsar botón
+CloneBtn.MouseButton1Click:Connect(function()
+    createFakeClone()
+end)
